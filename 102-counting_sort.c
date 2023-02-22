@@ -1,52 +1,67 @@
 #include "sort.h"
+#include <limits.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 /**
-  * counting_sort - Afunction that sorts an array using counting algorithm.
-  * @array: The array to sort.
-  * @size: The length of the array.
-  * Return: Nothing.
-  */
+ * get_max - Find max value in array of integers
+ *
+ * @array: array to find max value of
+ * @size: size of the array
+ * Return: 0
+ */
+int get_max(int *array, size_t size)
+{
+	int max = INT_MIN;
+
+	while (size--)
+		if (array[size] > max)
+			max = array[size];
+
+	return (max);
+}
+
+/**
+ * counting_sort - sort an array
+ * @array: array to sort
+ * @size: size of array to sort
+ */
 void counting_sort(int *array, size_t size)
 {
-	unsigned int i = 1;
-	int *counter = NULL, k = 0, j = 0;
+	int *temp, *cpy, j, max;
+	size_t i;
 
-	if (array == NULL || size < 2)
+	if (!array || size < 2)
 		return;
 
-	k = array[0];
-	for (; i < size; i++)
-	{
-		if (array[i] > k)
-			k = array[i];
-	}
-
-	counter = malloc(sizeof(int) * (k + 1));
-	if (counter == NULL)
+	max = get_max(array, size);
+	temp = calloc(max + 1, sizeof(*temp));
+	if (!temp)
 		return;
 
-	for (j = 0; j <= k; j++)
-		counter[j] = 0;
-	for (i = 0; i < size; i++)
-		counter[array[i]] += 1;
-	for (j = 0; j < k; j++)
+	cpy = malloc(sizeof(*cpy) * size);
+	if (!cpy)
 	{
-		counter[j + 1] += counter[j];
-		printf("%d, ", counter[j]);
+		free(temp);
+		return;
 	}
-	counter[j + 1] += counter[j];
-	printf("%d\n", counter[j + 1]);
+
+	for (i = 0; i < size; i++)
+		temp[array[i]]++;
+
+	for (j = 1; j < max + 1; j++)
+		temp[j] += temp[j - 1];
+
+	print_array(temp, max + 1);
+
 	for (i = 0; i < size; i++)
 	{
-		j = counter[array[i]] - 1;
-		if (array[i] != array[j])
-		{
-			k = array[i];
-			array[i] = array[j];
-			array[j] = k;
-		}
+		temp[array[i]]--;
+		cpy[temp[array[i]]] = array[i];
 	}
-	free(counter);
+
+	for (i = 0; i < size; i++)
+		array[i] = cpy[i];
+
+	free(temp);
+	free(cpy);
 }
